@@ -1,0 +1,46 @@
+const express = require('express');
+const cheerio = require('cheerio');
+const axios = require('axios');
+
+const app = express();
+const port = 3000;
+
+// Define the API endpoint
+app.get('/menu-links', async (req, res) => {
+  try {
+    // Extract the website URL and website type from the query parameters
+    const { url, type } = req.query;
+
+    // Scrape the page contents of the website URL
+    const response = await axios.get(url);
+    const $ = cheerio.load(response.data);
+
+    // Find the main navigation links based on the website type and labels
+    let mainLinks = [];
+    if (type === 'blog') {
+      mainLinks = $('nav ul li:contains("Blog") a').toArray();
+    } else if (type === 'ecommerce') {
+      mainLinks = $('nav ul li:contains("Shop") a, nav ul li:contains("Store") a').toArray();
+    } else if (type === 'portfolio') {
+      mainLinks = $('nav ul li:contains("Portfolio") a').toArray();
+    }
+
+    // Extract the main navigation link URLs and titles
+    const links = mainLinks.map(link => ({
+      url: $(link).attr('href'),
+      title: $(link).text(),
+    }));
+
+    // Return the main navigation links as a JSON object
+    res.json({ links });
+  } catch (error) {
+    // Handle any errors that occur
+    console.error(error);
+    res.status(500).send('An error occurred while fetching the menu links.');
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server started on port ${port}.`);
+});
