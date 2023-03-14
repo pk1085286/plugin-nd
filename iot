@@ -1,0 +1,37 @@
+const mqtt = require('mqtt');
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 3000;
+
+// Create an MQTT client and connect to the broker
+const client = mqtt.connect('mqtt://broker.example.com');
+
+// Handle any errors that occur during the MQTT connection
+client.on('error', (error) => {
+  console.error(`MQTT error: ${error}`);
+});
+
+// Define the API endpoint for receiving messages from the hardware device
+app.post('/messages', bodyParser.json(), (req, res) => {
+  try {
+    // Extract the message data from the request body
+    const { deviceId, data } = req.body;
+
+    // Publish the message data to the MQTT broker
+    client.publish(`devices/${deviceId}/data`, JSON.stringify(data));
+
+    // Return a success response
+    res.sendStatus(200);
+  } catch (error) {
+    // Handle any errors that occur
+    console.error(error);
+    res.status(500).send('An error occurred while processing the message.');
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server started on port ${port}.`);
+});
