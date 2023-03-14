@@ -1,0 +1,19 @@
+// Define a simple plugin function
+function myPlugin(options) {
+  // Initialize plugin with options
+  const opt1 = options.opt1 || 'default';
+  const opt2 = options.opt2 || 0;
+
+  // Return a function to be executed by the plugin
+  return function myPluginFunction(context) {
+    // Modify the context object
+    context.opt1 = opt1;
+    context.opt2 = opt2;
+
+    // Log the plugin execution
+    console.log(`myPlugin executed with options: opt1=${opt1}, opt2=${opt2}`);
+  };
+}
+
+// Export the plugin function
+module.exports = myPlugin;
